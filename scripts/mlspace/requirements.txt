@@ -1,0 +1,15 @@
+# Python 3.10–3.12. PyTorch is installed separately from the CUDA 12.4 index.
+transformers==4.55.4
+huggingface-hub==0.34.4
+accelerate==1.10.1
+numpy==1.26.4
+Pillow==11.3.0
+einops==0.8.1
+safetensors==0.6.2
+sentencepiece==0.2.1
+protobuf==5.29.5
+requests==2.32.5
+tqdm==4.67.1
+PyWavelets==1.8.0
+opencv-python-headless==4.11.0.86
+scikit-image==0.25.2

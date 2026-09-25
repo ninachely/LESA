@@ -36,8 +36,11 @@ def main(opts: SamplingOptions):
     dist.init_process_group("nccl")
     rank = dist.get_rank()
     world_size = dist.get_world_size()
+    if world_size != 1:
+        raise ValueError("This trainer does not synchronize predictor gradients; use --nproc_per_node=1")
     device = torch.device(f"cuda:{rank}")
     torch.cuda.set_device(rank)
+    torch.manual_seed(opts.seed)
 
     # Task allocation for distributed processing
     total_prompts = len(opts.prompts)

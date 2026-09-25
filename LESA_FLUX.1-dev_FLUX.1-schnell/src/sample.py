@@ -32,8 +32,9 @@ def main(opts: SamplingOptions):
     dist.init_process_group("nccl")
     rank = dist.get_rank()
     world_size = dist.get_world_size()
-    device = torch.device(f"cuda:{rank}")
-    torch.cuda.set_device(rank)
+    local_rank = int(os.environ.get("LOCAL_RANK", rank))
+    device = torch.device(f"cuda:{local_rank}")
+    torch.cuda.set_device(local_rank)
 
     # Task allocation for distributed processing
     total_prompts = len(opts.prompts)
@@ -44,8 +45,9 @@ def main(opts: SamplingOptions):
 
     if rank == 0 and not os.path.exists(opts.output_dir):
         os.makedirs(opts.output_dir, exist_ok=True)
+    dist.barrier()
 
-    from predictor import Predictor, Config
+    from predictor import Predictor, Config, cache_init
     predictor = Predictor(Config(), num_steps=opts.num_steps, enable_training=False)
 
     weights_path = f"{opts.weights_dir}/predictor_flux_N{opts.interval}_E{opts.first_enhance}.pt"
@@ -73,7 +75,6 @@ def main(opts: SamplingOptions):
 
     progress_bar = tqdm(total=len(prompts), desc="Generating images") if rank == 0 else None
 
-    start = rank * len(prompts)
     idx = 0  # Image index for this process
 
     for _ in range(len(prompts)):
@@ -99,8 +100,10 @@ def main(opts: SamplingOptions):
         }
 
         # Denoising
+        cache_dic, current = cache_init(**kwargs)
         with torch.no_grad():
-            x = denoise_cache(model, **inp, timesteps=timesteps, guidance=opts.guidance, predictor=predictor, **kwargs)
+            x = denoise_cache(model, **inp, timesteps=timesteps, guidance=opts.guidance,
+                              predictor=predictor, cache_dic=cache_dic, current=current)
                 
             # Decode latent variables
             x = unpack(x.float(), opts.height, opts.width)

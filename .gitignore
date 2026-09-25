@@ -216,3 +216,16 @@ __marimo__/
 
 # Streamlit
 .streamlit/secrets.toml
+
+# Local ML Space environments, model downloads and experiment artifacts
+.runtime/
+.venv-download/
+runs/
+**/checkpoints/
+**/predictor/ckpts/
+**/samples/
+**/log/
+*.safetensors
+*.pt
+*.pth
+.DS_Store
