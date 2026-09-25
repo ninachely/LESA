@@ -14,7 +14,7 @@ def main():
     for key, filename in (("FLUX_MODEL", "flux1-dev.safetensors"), ("FLUX_AE", "ae.safetensors")):
         path = hf_hub_download("black-forest-labs/FLUX.1-dev", filename)
         # Relative paths survive different NFS mount points in notebook and job.
-        paths[key] = str(Path(path).relative_to(hf_home))
+        paths[key] = str(Path(path).resolve().relative_to(hf_home))
     snapshot_download("google/t5-v1_1-xxl", allow_patterns=[
         "*.json", "spiece.model", "pytorch_model.bin",
     ])
